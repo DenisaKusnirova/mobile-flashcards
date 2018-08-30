@@ -5,8 +5,8 @@ import { Provider } from 'react-redux'
 import flashCardsReducer from './reducers'
 import { Constants } from 'expo'
 import Navigator from './components/Navigator'
-import asyncStorage from './middleware/asyncStorage'
 import logger from './middleware/logger'
+import { setLocalNotification } from './notification'
 
 const FlashcardsStatusBar = ({ backgroundColor, ...props }) => (
   <View style={{ backgroundColor, height: Constants.statusBarHeight }}>
@@ -15,6 +15,9 @@ const FlashcardsStatusBar = ({ backgroundColor, ...props }) => (
 )
 
 export default class App extends React.Component {
+  componentDidMount() {
+    setLocalNotification()
+  }
   render() {
     return (
       <Provider store={createStore(flashCardsReducer, applyMiddleware(logger))}>

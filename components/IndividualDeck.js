@@ -1,33 +1,62 @@
 import React, { Component } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native'
 import { connect } from 'react-redux'
+import { resetScore } from '../actions/scoreActions'
+import { clearLocalNotification, setLocalNotification } from '../notification'
 
 class IndividualDeck extends Component {
   static navigationOptions = {
-    title: 'Udacicard',
+    title: 'Udacicard'
+  }
+  getnumOfCards = () => {
+    const { decks } = this.props
+    const itemTitle = this.props.navigation.getParam('itemTitle', 'Undefined')
+
+    if (decks[itemTitle].questions.length === 0) {
+      return 'No cards'
+    } else if (decks[itemTitle].questions.length === 1) {
+      return '1 card'
+    } else if (decks[itemTitle].questions.length > 1) {
+      return decks[itemTitle].questions.length + ' cards'
+    }
+  }
+  startQuiz = () => {
+    const itemTitle = this.props.navigation.getParam('itemTitle', 'Undefined')
+
+    this.props.resetScore()
+    clearLocalNotification()
+      .then(setLocalNotification)
+    this.props.navigation.navigate('QuizView', { title: itemTitle })
   }
 
   render() {
-    const { itemTitle, numOfQuestions } = this.props.navigation.state.params
+    const { decks } = this.props
+    const itemTitle = this.props.navigation.getParam('itemTitle', 'Undefined')
 
     return (
       <View style={styles.container}>
-      <TouchableOpacity onPress={() => this.props.navigation.navigate('Dashboard')}>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={() => this.props.navigation.navigate('Dashboard')}>
+        </TouchableOpacity>
         <View>
           <Text style={styles.deckTitle}>{itemTitle}</Text>
-          <Text style={styles.deckSubTitle}>{numOfQuestions}</Text>
+          <Text style={styles.deckSubTitle}>{this.getnumOfCards()}</Text>
+          {decks[itemTitle].questions.length === 0 &&
+            <Text style={styles.note}>
+              Please add a card to start the quiz
+            </Text>
+          }
         </View>
-        <View style={{alignItems: 'center', paddingTop: 140}}>
-          <TouchableOpacity 
+        <View style={{ alignItems: 'center' }}>
+          <TouchableOpacity
             style={styles.buttonOne}
-            onPress={() => {this.props.navigation.navigate('NewQuestion')}}  
+            onPress={() => {this.props.navigation.navigate('NewQuestion', { title: itemTitle })}}
           >
             <Text style={styles.buttonText}>Add Card</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
+            disabled={decks[itemTitle].questions.length === 0 && true}
             style={styles.buttonTwo}
-            onPress={() => {this.props.navigation.navigate('QuizView')}}
+            onPress={() =>  this.startQuiz()}
           >
             <Text style={styles.buttonText}>Start Quiz</Text>
           </TouchableOpacity>
@@ -41,19 +70,29 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f3f3f3',
     flex: 1,
-    justifyContent: 'center'
+    justifyContent: 'space-between',
+    padding: 18,
+    paddingBottom: 36
   },
   deckTitle: {
-    fontSize: 60,
+    fontSize: 56,
     padding: 4,
     color: '#333333',
     textAlign: 'center'
   },
   deckSubTitle: {
-    fontSize: 34,
+    fontSize: 32,
     padding: 4,
     color: '#333333',
-    textAlign: 'center'
+    textAlign: 'center',
+    paddingTop: 12
+  },
+  note: {
+    fontSize: 20,
+    padding: 4,
+    color: '#ec5146',
+    textAlign: 'center',
+    paddingTop: 20
   },
   buttonOne: {
     borderStyle: 'solid',
@@ -78,11 +117,8 @@ const styles = StyleSheet.create({
   }
 })
 
-const mapStateToProps = (state, { navigation }) => {
-  const { itemTitle } = navigation.state.params
-   return {
-    itemTitle
-  }
-}
+const mapStateToProps = ({ decks }) => ({
+  decks
+})
 
-export default connect(mapStateToProps)(IndividualDeck)
+export default connect(mapStateToProps, { resetScore })(IndividualDeck)

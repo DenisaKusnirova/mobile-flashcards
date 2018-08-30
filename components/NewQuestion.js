@@ -13,8 +13,10 @@ class NewDeck extends Component {
   }
   addCard = () => {
     const { question, answer } = this.state
-    console.log('ADD NEW QUESTION', question + answer)
-  
+    const title = this.props.navigation.state.params.title
+ 
+    this.props.addCardToDeck(title, { question, answer })
+    this.props.navigation.navigate('IndividualDeck')
   }
   render() {
     return (

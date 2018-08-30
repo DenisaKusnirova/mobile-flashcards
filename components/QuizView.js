@@ -1,25 +1,78 @@
 import React, { Component } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { connect } from 'react-redux'
+import ResultPage from './ResultPage'
+import { saveCorrectAnswer, saveIncorrectAnswer } from '../actions/scoreActions'
 
 class QuizView extends Component {
   static navigationOptions = {
-    title: 'Quiz'
+    headerTitle: 'Quiz'
+  }
+  state = {
+    index: 0,
+    showQuestion: true,
+  }
+  renderNextQuestion = () => {
+    this.setState((prevState) => {
+      return {
+        index: prevState.index + 1,
+        showQuestion: true
+      }
+    })
+  }
+  changeState = () => {
+    this.setState((prevState) => ({ showQuestion: !prevState.showQuestion }))
+  }
+  saveCorrectAnswer = () => {
+    const { decks } = this.props
+    const title = this.props.navigation.state.params.title
+    this.props.saveCorrectAnswer(decks[title].questions[this.state.index].question)
+    this.renderNextQuestion()
+  }
+  saveIncorrectAnswer = () => {
+    const { decks } = this.props
+    const title = this.props.navigation.state.params.title
+    this.props.saveIncorrectAnswer(decks[title].questions[this.state.index].question)
+    this.renderNextQuestion()
   }
 
   render() {
+    const { decks } = this.props
+    const title = this.props.navigation.state.params.title
+    const questionIndex = this.state.index + 1
+
+    if (questionIndex > decks[title].questions.length) {
+      return <ResultPage />
+    }
+
     return (
       <View style={styles.container}>
+        <Text>{questionIndex + '/' + decks[title].questions.length}</Text>
         <View>
-          <Text style={styles.questionText}>Does React Native work with Android?</Text>
-          <TouchableOpacity style={{paddingTop: 30}}>
-            <Text style={styles.answer}>Answer</Text>
+          <Text style={styles.questionText}>
+            {this.state.showQuestion
+              ? decks[title].questions[this.state.index].question
+              : decks[title].questions[this.state.index].answer
+            }
+          </Text>
+          <TouchableOpacity
+            style={{ paddingTop: 18 }}
+            onPress={() => { this.changeState() }}
+          >
+            <Text style={styles.answer}>{this.state.showQuestion ? 'Answer' : 'Question'}</Text>
           </TouchableOpacity>
         </View>
-        <View style={{alignItems: 'center', paddingTop: 100}}>
-          <TouchableOpacity style={styles.buttonOne}>
+        <View style={{alignItems: 'center'}}>
+          <TouchableOpacity
+            style={styles.buttonOne}
+            onPress={() => this.saveCorrectAnswer()}
+          >
             <Text style={styles.buttonText}>Correct</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonTwo}>
+          <TouchableOpacity
+            style={styles.buttonTwo}
+            onPress={() => this.saveIncorrectAnswer()}
+          >
             <Text style={styles.buttonText}>Incorrect</Text>
           </TouchableOpacity>
         </View>
@@ -31,19 +84,19 @@ class QuizView extends Component {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f3f3f3',
+    display: 'flex',
     flex: 1,
-    justifyContent: 'center'
+    justifyContent: 'space-between',
+    padding: 18,
+    paddingBottom: 36
   },
   questionText: {
-    fontSize: 50,
-    padding: 4,
+    fontSize: 28,
     color: '#333333',
     textAlign: 'center'
   },
   answer: {
-    fontSize: 24,
-    padding: 4,
-    color: '#ec5146',
+    fontSize: 20,
     textAlign: 'center',
     color: '#ff471a'
   },
@@ -68,4 +121,8 @@ const styles = StyleSheet.create({
   }
 })
 
-export default QuizView
+const mapStateToProps = (decks) => {
+  return decks
+}
+
+export default connect(mapStateToProps, { saveCorrectAnswer, saveIncorrectAnswer })(QuizView) 

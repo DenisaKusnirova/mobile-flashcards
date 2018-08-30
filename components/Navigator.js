@@ -12,7 +12,7 @@ const Navigator = createStackNavigator(
     IndividualDeck: IndividualDeck,
     NewDeck: NewDeck,
     NewQuestion: NewQuestion,
-    QuizView: QuizView
+    QuizView: QuizView,
   },
   {
     initialRouteName: 'Dashboard',

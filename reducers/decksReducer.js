@@ -1,9 +1,10 @@
 import {
+	LOAD_DATA_FROM_STORAGE,
 	RECEIVE_ALL_DECKS,
-	RECEIVE_DECK,
 	SAVE_DECK_TITLE,
-	ADD_CARD_TO_DECK
+	ADD_CARD_TO_DECK,
 } from '../actions'
+import { getData, saveDeckTitle, addCardToDeck } from '../Storage'
 
 let data = {
 	React: {
@@ -24,7 +25,8 @@ let data = {
 		questions: [
 			{
 				question: 'What is a closure?',
-				answer: 'The combination of a function and the lexical environment within which that function was declared.'
+				answer: 'The combination of a function and the lexical environment within which that function was declared.',
+				correct: true
 			}
 		]
 	}
@@ -32,14 +34,22 @@ let data = {
 
 export default decksReducer = (state = data, action) => {
 	switch (action.type) {
+		case LOAD_DATA_FROM_STORAGE:
+			const data = action.data
+			if (!data) {
+				return state
+			}
+			return {
+				...state,
+				...data
+			}
 		case RECEIVE_ALL_DECKS:
 			return {
 				...state,
 				...action.decks
 			}
-		case RECEIVE_DECK:
-			return state.map((deck) => deck.id !== action.id)
 		case SAVE_DECK_TITLE:
+			saveDeckTitle(action.title)
 			return {
 				...state,
 				[action.title]: {
@@ -48,9 +58,16 @@ export default decksReducer = (state = data, action) => {
 				}
 			}
 		case ADD_CARD_TO_DECK:
+			addCardToDeck(action.title, action.card)
 			return {
 				...state,
-				[action.title]: action.card
+				[action.title]: { 
+					...state[action.title], 
+					questions: [
+						...state[action.title].questions,
+						action.card
+					]
+				}
 			}
 		default:
 			return state
