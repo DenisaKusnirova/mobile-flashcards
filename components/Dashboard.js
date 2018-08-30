@@ -50,6 +50,7 @@ class Dashboard extends Component {
         </View>
         <FlatList
           data={decksKeys}
+          keyExtractor={(item) => item.key}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => this.renderDeck(item)}>
               <View style={styles.deckContainer}>
