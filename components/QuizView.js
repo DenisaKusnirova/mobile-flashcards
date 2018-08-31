@@ -1,17 +1,27 @@
 import React, { Component } from 'react'
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, Text, TouchableOpacity, DeviceEventEmitter } from 'react-native'
 import { connect } from 'react-redux'
 import ResultPage from './ResultPage'
 import { saveCorrectAnswer, saveIncorrectAnswer } from '../actions/scoreActions'
+
+export const RESET_INDEX_EVENT = "RESET_INDEX_EVENT"
 
 class QuizView extends Component {
   static navigationOptions = {
     headerTitle: 'Quiz'
   }
+
   state = {
     index: 0,
     showQuestion: true,
   }
+
+  componentWillMount() {
+    DeviceEventEmitter.addListener(RESET_INDEX_EVENT, (e) => {
+      this.setState({ index: 0, showQuestion: true })
+    })
+  }
+
   renderNextQuestion = () => {
     this.setState((prevState) => {
       return {
@@ -20,20 +30,29 @@ class QuizView extends Component {
       }
     })
   }
+
   changeState = () => {
     this.setState((prevState) => ({ showQuestion: !prevState.showQuestion }))
   }
+
   saveCorrectAnswer = () => {
     const { decks } = this.props
     const title = this.props.navigation.state.params.title
     this.props.saveCorrectAnswer(decks[title].questions[this.state.index].question)
     this.renderNextQuestion()
   }
+
   saveIncorrectAnswer = () => {
     const { decks } = this.props
     const title = this.props.navigation.state.params.title
     this.props.saveIncorrectAnswer(decks[title].questions[this.state.index].question)
     this.renderNextQuestion()
+  }
+
+  renderResultPage= () => {
+    return (
+      this.props.navigation.navigate('ResultPage')
+    )
   }
 
   render() {
@@ -42,7 +61,7 @@ class QuizView extends Component {
     const questionIndex = this.state.index + 1
 
     if (questionIndex > decks[title].questions.length) {
-      return <ResultPage />
+      return this.renderResultPage()
     }
 
     return (

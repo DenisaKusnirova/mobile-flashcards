@@ -12,7 +12,7 @@ class NewDeck extends Component {
   }
   saveNewDeck = () => {
     this.props.saveDeckTitle(this.state.text)
-    this.props.navigation.navigate('Dashboard')
+    this.props.navigation.navigate('IndividualDeck', {itemTitle: this.state.text})
   }
 
   render() {
